@@ -1,0 +1,45 @@
+"column","sClone!","sBlock!","sbPlot!","ssPlot!","value","is_outlier"
+"Acetic_acid_hexyl_ester","Skwentna",1,3,12,68.750311376232,TRUE
+"Hexanoic_acid","F. x ananassa 90537-3",1,4,6,15.8878217871626,TRUE
+"Butanoic_acid_3_methyl_ethyl_est","Tonami",1,5,1,23.8924246904508,TRUE
+"Hexanoic_acid_ethyl_ester","Tonami",1,5,1,110.698629217407,TRUE
+"Hexanoic_acid","US 4387",1,6,6,16.5050184406512,TRUE
+"%2_Pentanone","Weisse Anasa",1,6,12,0.576637625922382,TRUE
+"%2_3_Butanedione","MDUS 5136",1,9,8,0.364950477186378,TRUE
+"Hexanoic_acid","Sweet Charlie",1,10,5,15.9166665827477,TRUE
+"Acetic_acid_hexyl_ester","Susitna",1,10,12,66.9747583650036,TRUE
+"%2_Butenoic_acid_methyl_ester","Olympus",1,11,1,4.6602785006707,TRUE
+"%1_Hexanol_2_ethyl","ORUS 3727 ORUSM 265",1,11,7,61.4594646565791,TRUE
+"%2_3_Butanedione","ORUS 3727 ORUSM 265",1,11,7,0.365032373596109,TRUE
+"Butanoic_acid_3_methyl_ethyl_est","Geneva",1,13,1,28.607085332222,TRUE
+"Methyl_isovalerate","Geneva",1,13,1,0.125656616896996,TRUE
+"Butanoic_acid_2_methyl_methyl_es","K17-15",1,15,11,63.7140712394808,TRUE
+"Isopropyl_butyrate","K12-14",1,16,5,0.176510953489083,TRUE
+"Butanoic_acid_3_methyl_ethyl_est","F. x ananassa HVSC-122",1,19,2,24.5102328528892,TRUE
+"Hexanoic_acid_ethyl_ester","F. x ananassa Girdwood KHCW 96-28-01",1,19,8,102.722735815308,TRUE
+"Butanethioic_acid_S_methyl_ester","Nike",1,20,3,26.0394690726464,TRUE
+"Butanoic_acid_butyl_ester","NC 3892 MI",1,20,9,4.61648769643315,TRUE
+"%2_Pentanone","Revada",1,21,11,0.578178555692114,TRUE
+"Butanoic_acid_2_methyl_ethyl_est","Jaune",1,22,4,3.10350941185931,TRUE
+"%2_Hexen_1_ol_acetate_Z","K17-53",1,23,5,16.3779327584376,TRUE
+"%2_Hexen_1_ol_acetate_Z","Podnyaya Zagorya",1,24,1,16.1119626022431,TRUE
+"%1_Hexanol_2_ethyl","Primetime",1,24,10,73.4321217265968,TRUE
+"Acetic_acid_butyl_ester","Rainier",1,24,12,331.38669204943,TRUE
+"Acetic_acid_hexyl_ester","Rainier",1,24,12,288.147032279735,TRUE
+"Hexanoic_acid_methyl_ester","Rainier",1,24,12,75.0828021041849,TRUE
+"Methyl_isovalerate","Primetime",2,3,9,0.108477681487293,TRUE
+"Hexanoic_acid","K-Valley Sunset",2,4,12,16.3983539648411,TRUE
+"Ethanol","Tabea",2,7,3,0.00820841080301192,TRUE
+"Butanoic_acid_3_methyl_ethyl_est","F. x ananassa NC 98‑22‑4",2,9,9,23.9758189365416,TRUE
+"Butanoic_acid_2_methyl_methyl_es","Fratina",2,9,11,63.5920296606045,TRUE
+"Isopropyl_butyrate","K13-03",2,11,2,0.159895584223113,TRUE
+"Methyl_isovalerate","Ovation",2,12,1,0.107455490741833,TRUE
+"Methyl_isovalerate","ORUS 3727 ORUSM 265",2,12,2,0.107341000327168,TRUE
+"Butanoic_acid_2_methyl_methyl_es","ORUS 4474 ORUSM 152",2,12,5,63.422677519566,TRUE
+"%2_Pentanone","Nike",2,13,6,0.576913135392542,TRUE
+"Butanoic_acid_2_methyl_ethyl_est","Troubadour",2,14,11,3.32750037670518,TRUE
+"Hexanal","Istochnik",2,19,5,120.601279726122,TRUE
+"Acetic_acid_butyl_ester","CA 70.3-117 day neutral",2,20,2,260.244097160532,TRUE
+"Butanoic_acid_2_methyl_methyl_es","K17-52",2,23,10,64.2033819481948,TRUE
+"%2_Butenoic_acid_methyl_ester","K17-51",2,23,11,4.81894212126362,TRUE
+"Acetic_acid_butyl_ester","K15-11",2,24,2,177.923941236045,TRUE

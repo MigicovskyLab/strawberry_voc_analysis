@@ -369,6 +369,75 @@ for (compound in compound_cols_for_hist) {
     ggsave(filename = out_file, plot = p, width = 7, height = 5, dpi = 300)
 }
 
+# %%############################################################################# descriptive stats and summaries
+summary_total_aroma <- summary(aov_data_means_totals$total_Aroma_Compounds)
+
+compound_means <- aov_data_means_totals %>%
+  select(all_of(compound_cols)) %>%
+  summarise(across(everything(), ~ mean(.x, na.rm = TRUE))) %>%
+  pivot_longer(cols = everything(), names_to = "Compound", values_to = "Mean_Abundance") %>%
+  arrange(desc(Mean_Abundance))
+
+top_compound <- head(compound_means, 1)
+bottom_compound <- tail(compound_means, 1)
+
+class_totals <- aov_data_means_totals %>%
+  select(
+    total_Alcohols_Diols, total_Aldehydes, total_Branched_Esters, 
+    total_Carboxylic_Acids, total_Ketones, total_Oxygen_Heterocycles, 
+    total_Straight_Esters, total_Sulfur_Compounds, total_Monoterpenoids
+  ) %>%
+  summarise(across(everything(), ~ mean(.x, na.rm = TRUE))) %>%
+  pivot_longer(cols = everything(), names_to = "Class", values_to = "Mean_Class_Abundance") %>%
+  mutate(Relative_Abundance_Pct = (Mean_Class_Abundance / sum(Mean_Class_Abundance)) * 100) %>%
+  arrange(desc(Relative_Abundance_Pct))
+
+class_counts <- data.frame(
+  Class = names(chemical_class_list),
+  Compound_Count = sapply(chemical_class_list, length)
+) %>%
+  arrange(desc(Compound_Count))
+
+variety_extremes <- aov_data_means_totals %>%
+  select(`sClone!`, total_Aroma_Compounds) %>%
+  filter(!is.na(total_Aroma_Compounds)) %>%
+  arrange(desc(total_Aroma_Compounds))
+
+highest_variety <- head(variety_extremes, 1)
+lowest_variety <- tail(variety_extremes, 1)
+
+variety_diversity <- aov_data_means_totals %>%
+  select(`sClone!`, sample_Ubiquity) %>%
+  arrange(desc(sample_Ubiquity))
+
+highest_diversity <- head(variety_diversity, 1)
+
+total_samples <- nrow(aov_data_means_totals)
+
+compound_prevalence <- aov_data_means_totals %>%
+  select(all_of(compound_cols)) %>%
+  summarise(across(everything(), ~ sum(.x > 0, na.rm = TRUE))) %>%
+  pivot_longer(cols = everything(), names_to = "Compound", values_to = "Count_Present") %>%
+  mutate(
+    Total_Samples = total_samples,
+    Percent_Varieties_Present = (Count_Present / Total_Samples) * 100,
+    Fraction_Present = paste0(Count_Present, "/", Total_Samples, " samples")
+  ) %>%
+  arrange(desc(Percent_Varieties_Present))
+
+most_common <- head(compound_prevalence, 3)
+least_common <- tail(compound_prevalence, 3)
+
+print(summary_total_aroma)
+print(top_compound)
+print(bottom_compound)
+print(class_totals)
+print(class_counts)
+print(highest_variety)
+print(lowest_variety)
+print(highest_diversity)
+print(most_common)
+print(least_common)
 
 # %%############################################################################# combined heatmap
 compound_cols_clean <- intersect(compound_cols, colnames(aov_data_means_totals))
@@ -886,6 +955,18 @@ text(x = 1.3 * cos(angles_specific), y = 1.3 * sin(angles_specific),
      font = 2)
 
 dev.off()
+
+all_included_varieties <- unique(c(names(mention_counts[mention_counts >= 2]), specific_varieties))
+
+table_data <- combined_data %>%
+  select(variety_col, all_of(all_plot_compounds)) %>%
+  filter(!!sym(variety_col) %in% all_included_varieties) %>%
+  rename_with(~ clean_names[.], all_of(all_plot_compounds))
+
+View(table_data)
+
+write_csv(table_data, file.path("raw_radar_plot_data.csv"))
+
 # %%############################################################################# Origin and Status Comparisons
 aroma_indices <- 2:37
 
