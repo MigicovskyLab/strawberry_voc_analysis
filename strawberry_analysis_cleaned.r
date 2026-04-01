@@ -1,40 +1,19 @@
 # %%############################################################################# load libs
 library(tidyverse)
-library(dplyr)
-library(ggplot2)
-library(readr)
-library(tidyr)
-library(janitor)
-library(e1071)  
-library(pheatmap)
-library(viridisLite)
-library(Hmisc)
-library(ggrepel)
-library(naniar)
-library(RColorBrewer)
-library(purrr)
 library(readxl)
-library(corrplot)
-library(cluster)
-library(vegan)
-library(tibble)
-library(plotly)
-library(htmlwidgets)
-library(glue)
-library(pcaMethods)
+library(Hmisc)
 library(fmsb)
 library(rlang)
 library(broom)
 library(ComplexHeatmap)
 library(colorRamp2)
 library(scales)
-library(ggfortify)
 library(ggbeeswarm) 
 library(grid)
 library(patchwork)
 
 # %%############################################################################# data loading and cleaning
-aov_data <- read_excel("/Users/clayelzinga/Desktop/Work_School/School/Thesis/Data_sets/strawberry_data/sbDivConc21out.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -693,8 +672,8 @@ cat("Odds Ratio: ", fisher_result$estimate, "\n")
 
 
 # %%############################################################################# Load in Agronomic Data
-agronomic_data <- read_csv("/Users/clayelzinga/Desktop/Work_School/School/Thesis/Data_sets/strawberry_data/strawberry_data_updated_2025_05_21.csv")
-# Make a lookup table for known mismatches
+agronomic_data <- read_csv("strawberry_agronomic_data.csv")
+
 name_map <- c(
   "CA 42.8-16 Tioga parent" = "CA 42.8‑16 Tioga parent",
   "F. x ananassa NC 98-22-4" = "F. x ananassa NC 98‑22‑4",
@@ -719,16 +698,13 @@ name_map <- c(
 agronomic_data <- agronomic_data %>%
   mutate(Plant_Name_clean = dplyr::recode(Plant_Name, !!!name_map))
 
-# Now join on harmonized names
 combined_data <- left_join(aov_data_means_totals,
                            agronomic_data,
                            by = c("sClone!" = "Plant_Name_clean"))
 
-#Removing XYZ columns due to a large number of color (and highly associated to one another)
 combined_data <- combined_data %>%
   select(-X, -Y, -Z)
 
-# Set color data to NA for the two white strawberry varieties
 combined_data <- combined_data %>%
   mutate(across(c(`L.`, `a.`, `b.`, `C.`, `h`), 
                 ~ ifelse(`sClone!` %in% c("Weisse Anasa", "White D"), NA, .)))
@@ -819,7 +795,6 @@ radar_data_specific <- combined_data %>%
   mutate(across(all_of(all_plot_compounds), ~replace_na(., 0))) %>%
   column_to_rownames(var = variety_col)
 
-# print row names of radar_data_specific
 print(rownames(radar_data_specific))
 
 colnames(radar_data_specific) <- clean_names[colnames(radar_data_specific)]
@@ -1312,5 +1287,4 @@ final_complex_results <- model_summaries_complex %>%
   select(compound, estimate, r_squared, raw_p_value, fdr_p_value)
 
 print(final_complex_results)
-# %%#############################################################################
 
