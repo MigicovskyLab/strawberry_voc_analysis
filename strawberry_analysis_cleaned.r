@@ -965,7 +965,7 @@ table_data <- combined_data %>%
 
 View(table_data)
 
-write_csv(table_data, file.path("raw_radar_plot_data.csv"))
+write_csv(table_data, file.path("raw_radar_plot_.csv"))
 
 # %%############################################################################# Origin and Status Comparisons
 aroma_indices <- 2:37
@@ -1083,7 +1083,7 @@ p1_list <- create_individual_plots(plot_data_breeding, "Population", cols_pop)
 p2_list <- create_individual_plots(plot_data_cultivar, "Population", cols_pop)
 p3_list <- create_individual_plots(plot_data_status,   "STATUS",     cols_stat)
 
-all_plots <- c(p1_list, p2_list, p3_list)
+all_plots <- c(p2_list, p3_list, p1_list)
 
 if(length(all_plots) > 0) {
   
@@ -1099,6 +1099,34 @@ if(length(all_plots) > 0) {
   print("No significant results found in any comparison.")
 }
 
+get_mode <- function(v) {
+  uniqv <- unique(na.omit(v))
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+calc_summary_stats <- function(df, group_col) {
+  if (is.null(df) || nrow(df) == 0) return(NULL)
+  
+  df %>%
+    group_by(Facet_Label, !!sym(group_col)) %>%
+    summarise(
+      Median = median(Abundance, na.rm = TRUE),
+      Mean = mean(Abundance, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(Comparison = df$Comparison[1])
+}
+
+summary_breeding <- calc_summary_stats(plot_data_breeding, "Population")
+summary_cultivar <- calc_summary_stats(plot_data_cultivar, "Population") 
+summary_status <- calc_summary_stats(plot_data_status, "STATUS")
+
+all_summaries <- bind_rows(summary_breeding, summary_cultivar, summary_status)
+
+if (!is.null(all_summaries) && nrow(all_summaries) > 0) {
+  cat("\n--- Medians and Modes for Significant Comparisons ---\n")
+  View(all_summaries)
+}
 
 # %%############################################################################# Agronomic Correlations
 aroma_cols <- c(analysis_cols, "total_Aroma_Compounds")
