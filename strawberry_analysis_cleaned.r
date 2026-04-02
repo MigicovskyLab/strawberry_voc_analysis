@@ -1061,7 +1061,7 @@ create_individual_plots <- function(data, x_col, colors) {
       scale_y_continuous(expand = expansion(mult = c(0.05, 0.2))) +
       scale_fill_manual(values = colors) +
       theme_bw(base_size = 18) +
-      labs(y = "Abundance (ng/g)", x = NULL) +
+      labs(y = expression(Abundance~(ng~g^-1)), x = NULL) +
       theme(
         legend.position = "none",
         axis.text.x = element_text(face = "bold", size = 18),
@@ -1213,7 +1213,7 @@ if (nrow(sig_indices) > 0) {
               panel.grid.minor = element_blank()
               ) +
   labs(
-    x = paste(display_aroma, "(Abundance)"),
+    x = bquote(.(display_aroma) ~ (ng ~ g^-1)),
     y = clean_agro_name
   )
     
