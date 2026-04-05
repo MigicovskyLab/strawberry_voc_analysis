@@ -11,6 +11,8 @@ library(scales)
 library(ggbeeswarm) 
 library(grid)
 library(patchwork)
+library(gridExtra)
+library(cowplot)
 
 # %%############################################################################# data loading and cleaning
 aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
@@ -969,7 +971,6 @@ write_csv(table_data, file.path("raw_radar_plot_.csv"))
 
 # %%############################################################################# Origin and Status Comparisons
 aroma_indices <- 2:37
-
 stats_status <- combined_data %>%
   filter(STATUS %in% c("Cultivar", "Breeding Material")) %>%
   select(STATUS, all_of(aroma_indices)) %>%
@@ -1054,18 +1055,26 @@ create_individual_plots <- function(data, x_col, colors) {
   for(f_label in unique(data$Facet_Label)) {
     sub_data <- data[data$Facet_Label == f_label, ]
     
+    labels_with_n <- sub_data %>%
+      group_by(X_VAR) %>%
+      summarise(n = sum(!is.na(Abundance)), .groups = "drop") %>%
+      mutate(label = paste0(gsub("Breeding Material", "Breeding\nMaterial", X_VAR), "\n(n=", n, ")"))
+    
+    label_map <- setNames(labels_with_n$label, labels_with_n$X_VAR)
+    
     p <- ggplot(sub_data, aes(x = X_VAR, y = Abundance, fill = X_VAR)) +
       geom_boxplot(width = 0.4, outlier.shape = NA, alpha = 0.2, size = 0.5, color = "grey40") +
-      geom_quasirandom(alpha = 0.8, size = 2.0, cex = 2, shape = 16, color = "black") +
+      geom_quasirandom(alpha = 0.8, size = 2.0, shape = 16, color = "black") +
       facet_wrap(~ Facet_Label, scales = "free") +
       scale_y_continuous(expand = expansion(mult = c(0.05, 0.2))) +
       scale_fill_manual(values = colors) +
-      theme_bw(base_size = 18) +
+      scale_x_discrete(labels = label_map) +
+      theme_bw(base_size = 28) +
       labs(y = expression(Abundance~(ng~g^-1)), x = NULL) +
       theme(
         legend.position = "none",
-        axis.text.x = element_text(face = "bold", size = 18),
-        strip.text = element_text(face = "bold", size = 18),
+        axis.text.x = element_text(face = "bold", size = 28),
+        strip.text = element_text(face = "bold", size = 28),
         strip.background = element_rect(fill = "grey95"),
         panel.grid.minor = element_blank()
       )
@@ -1089,7 +1098,7 @@ if(length(all_plots) > 0) {
   
   final_figure <- wrap_plots(all_plots, nrow = 1) + 
     plot_annotation(tag_levels = 'A') & 
-    theme(plot.tag = element_text(size = 18, face = "bold"))
+    theme(plot.tag = element_text(size = 28, face = "bold"))
   
   print(final_figure)
   
@@ -1124,7 +1133,6 @@ summary_status <- calc_summary_stats(plot_data_status, "STATUS")
 all_summaries <- bind_rows(summary_breeding, summary_cultivar, summary_status)
 
 if (!is.null(all_summaries) && nrow(all_summaries) > 0) {
-  cat("\n--- Medians and Modes for Significant Comparisons ---\n")
   View(all_summaries)
 }
 
@@ -1153,8 +1161,6 @@ p_adj_matrix <- matrix(p_adj_vector, nrow = nrow(p_matrix), ncol = ncol(p_matrix
 
 dimnames(p_adj_matrix) <- dimnames(p_matrix)
 
-library(gridExtra)
-library(cowplot)
 
 sig_indices <- which(p_adj_matrix < fdr_threshold, arr.ind = TRUE)
 
@@ -1164,84 +1170,84 @@ if (nrow(sig_indices) > 0) {
   neg_plots <- list()
   
   for (i in seq_len(nrow(sig_indices))) {
-    row_idx <- sig_indices[i, 1]
-    col_idx <- sig_indices[i, 2]
-    
-    raw_aroma_name <- rownames(p_adj_matrix)[row_idx]
-    raw_agro_name <- colnames(p_adj_matrix)[col_idx]
-    
-    if (is.na(raw_aroma_name) || is.na(raw_agro_name)) next
-    
-    if (!is.null(voc_name_map) && (raw_aroma_name %in% names(voc_name_map))) {
-      display_aroma <- voc_name_map[[raw_aroma_name]]
-    } else {
-      display_aroma <- gsub("total_", "Total ", raw_aroma_name)
-      display_aroma <- gsub("_", " ", display_aroma)
-      display_aroma <- gsub("^%", "", display_aroma)
-    }
-    
-    clean_agro_name <- raw_agro_name
-    if (raw_agro_name %in% "Berry_Wt") {
-      clean_agro_name <- "Berry Weight (g)"
-    } else if (raw_agro_name %in% "Harvest_Date") {
-      clean_agro_name <- "Harvest Date (Julian)"
-    }
-    
-    r_raw <- cross_cor[row_idx, col_idx]
-    r_val <- round(r_raw, 2)
-    p_val <- formatC(p_adj_matrix[row_idx, col_idx], format = "e", digits = 2)
-    
-    plot_color <- ifelse(r_raw > 0, "blue", "red")
-    
-    temp_df <- data.frame(
-      Aroma_Value = aroma_data[[raw_aroma_name]],
-      Agro_Value = agronomic_data[[raw_agro_name]]
-    )
-    
-    x_center <- mean(range(temp_df$Aroma_Value, na.rm = TRUE))
-    stat_label <- paste0("r = ", r_val, " | p-FDR = ", p_val)
-    
-    p_individual <- ggplot(temp_df, aes(x = Aroma_Value, y = Agro_Value)) +
-        geom_point(alpha = 0.6, size = 2) +
-        geom_smooth(method = "lm", color = plot_color, se = FALSE, linewidth = 1) +
-        annotate("text", x = Inf, y = Inf, label = stat_label, 
-           vjust = 1.5, hjust = 1.1, fontface = "bold", size = 5) +
-        theme_bw() +
-        theme(
-              axis.title = element_text(size = 16, face = "bold"),
-              axis.text = element_text(size = 12),
-              panel.grid.minor = element_blank()
-              ) +
-  labs(
-    x = bquote(.(display_aroma) ~ (ng ~ g^-1)),
-    y = clean_agro_name
-  )
-    
-    if (r_raw > 0) {
-      pos_plots[[length(pos_plots) + 1]] <- p_individual
-    } else {
-      neg_plots[[length(neg_plots) + 1]] <- p_individual
-    }
+  row_idx <- sig_indices[i, 1]
+  col_idx <- sig_indices[i, 2]
+  
+  raw_aroma_name <- rownames(p_adj_matrix)[row_idx]
+  raw_agro_name <- colnames(p_adj_matrix)[col_idx]
+  
+  if (is.na(raw_aroma_name) || is.na(raw_agro_name)) next
+  
+  if (!is.null(voc_name_map) && (raw_aroma_name %in% names(voc_name_map))) {
+    display_aroma <- voc_name_map[[raw_aroma_name]]
+  } else {
+    display_aroma <- gsub("total_", "Total ", raw_aroma_name)
+    display_aroma <- gsub("_", " ", display_aroma)
+    display_aroma <- gsub("^%", "", display_aroma)
   }
   
-  png("/Users/clayelzinga/Desktop/plots/strawberry/aroma_agronomic_clean_names.png", 
-      width = 18, height = 11, units = "in", res = 300)
+  clean_agro_name <- raw_agro_name
+  if (raw_agro_name %in% "Berry_Wt") {
+    clean_agro_name <- "Berry Weight (g)"
+  } else if (raw_agro_name %in% "Harvest_Date") {
+    clean_agro_name <- "Harvest Date (Julian)"
+  }
+  
+  r_raw <- cross_cor[row_idx, col_idx]
+  r_val <- round(r_raw, 2)
+  p_val <- formatC(p_adj_matrix[row_idx, col_idx], format = "e", digits = 2)
+  
+  plot_color <- ifelse(r_raw > 0, "blue", "red")
+  
+  temp_df <- data.frame(
+    Aroma_Value = aroma_data[[raw_aroma_name]],
+    Agro_Value = agronomic_data[[raw_agro_name]]
+  )
+  
+  x_center <- mean(range(temp_df$Aroma_Value, na.rm = TRUE))
+  stat_label <- paste0("r = ", r_val, " | p-FDR = ", p_val)
+  
+  p_individual <- ggplot(temp_df, aes(x = Aroma_Value, y = Agro_Value)) +
+    geom_point(alpha = 0.6, size = 2) +
+    geom_smooth(method = "lm", color = plot_color, se = FALSE, linewidth = 1) +
+    annotate("text", x = Inf, y = Inf, label = stat_label, 
+       vjust = 1.5, hjust = 1.1, fontface = "bold", size = 7) + 
+    theme_bw() +
+    theme(
+        axis.title = element_text(size = 28),
+        axis.text = element_text(size = 28),
+        panel.grid.minor = element_blank()
+        ) +
+  labs(
+  x = bquote(.(display_aroma) ~ (ng ~ g^-1)),
+  y = clean_agro_name
+  )
+  
+  if (r_raw > 0) {
+    pos_plots[[length(pos_plots) + 1]] <- p_individual
+  } else {
+    neg_plots[[length(neg_plots) + 1]] <- p_individual
+  }
+  }
+  
+  png("aroma_agronomic_clean_names.png", 
+    width = 18, height = 11, units = "in", res = 300)
   
   combined_plots <- c(pos_plots, list(NULL), neg_plots)
   
   final_plot <- plot_grid(
-    plotlist = combined_plots, 
-    ncol = 3, 
-    nrow = 2,
-    labels = c("A", "B", "", "C", "D", "E"), 
-    align = "hv", 
-    axis = "tblr"
+  plotlist = combined_plots, 
+  ncol = 3, 
+  nrow = 2,
+  labels = c("A", "B", "", "C", "D", "E"), 
+  label_size = 28,
+  align = "hv", 
+  axis = "tblr"
   )
   
   print(final_plot)
   
   dev.off()
-  print("Success: Plot created with equally sized panels, grouped correlations, and inner text.")
 
 } else {
   print("No correlations met the FDR significance threshold.")
