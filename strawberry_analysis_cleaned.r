@@ -872,7 +872,12 @@ colnames(radar_data_specific) <- str_wrap(colnames(radar_data_specific), width =
 
 radar_fmsb_specific <- rbind(rep(1, ncol(radar_data_specific)), rep(0, ncol(radar_data_specific)), radar_data_specific)
 
-colors_border_specific <- alpha("grey20", 0.5)
+colors_border_specific <- rep(alpha("grey20", 0.5), nrow(radar_data_specific))
+colors_border_specific[rownames(radar_data_specific) == "Itasca"] <- "#D55E00"
+colors_border_specific[rownames(radar_data_specific) == "Sweet Charlie"] <- "#0072B2"
+
+line_widths_specific <- rep(3, nrow(radar_data_specific))
+line_widths_specific[rownames(radar_data_specific) %in% c("Itasca", "Sweet Charlie")] <- 5
 
 label_colors <- c(
   rep("black", length(target_compounds)), 
@@ -880,10 +885,10 @@ label_colors <- c(
 )
 label_colors_specific <- label_colors[seq_len(ncol(radar_data_specific))]
 
-png("/Users/clayelzinga/Desktop/plots/strawberry/combined_radar_panels_dash.png",
+png("combined_radar_panels_dash.png",
     width = 12, height = 7, units = "in", res = 300)
 
-par(mfrow = c(1, 2), mar = c(5, 3, 6, 3), xpd = TRUE, pty = "s")
+par(mfrow = c(1, 2), mar = c(9, 3, 6, 3), xpd = TRUE, pty = "s")
 
 radarchart(radar_fmsb,
            axistype = 1,
@@ -918,7 +923,7 @@ italicized_labels <- lapply(rownames(radar_data), function(x) {
   }
 })
 
-legend(x = "top", legend = as.expression(italicized_labels),
+legend(x = "bottom", legend = as.expression(italicized_labels),
        inset = -0.25,
        title = "Top Producers",
        horiz = FALSE,
@@ -938,7 +943,7 @@ radarchart(radar_fmsb_specific,
            cglcol = "grey80",
            axislabcol = "black",
            pfcol = NA,
-           plwd = 5,
+           plwd = line_widths_specific,
            plty = 2,
            cglty = 1,
            title = "",
@@ -954,6 +959,18 @@ text(x = 1.3 * cos(angles_specific), y = 1.3 * sin(angles_specific),
      col = label_colors_specific,
      cex = 1.3,
      font = 2)
+
+legend(x = "bottom", legend = c("Itasca", "Sweet Charlie"),
+       inset = -0.25,
+       title = "Selected Varieties",
+       horiz = FALSE,
+       ncol = 2,
+       bty = "n",
+       pch = 20,
+       col = c("#D55E00", "#0072B2"),
+       text.col = "black",
+       cex = 1.1,
+       pt.cex = 2)
 
 dev.off()
 
