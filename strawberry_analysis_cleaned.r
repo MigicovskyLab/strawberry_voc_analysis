@@ -1280,8 +1280,8 @@ large_high_esters <- combined_data %>%
 
 large_high_total_aroma <- combined_data %>%
   filter(
-    Berry_Wt >= quantile(Berry_Wt, 0.8, na.rm = TRUE),
-    total_Aroma_Compounds >= quantile(total_Aroma_Compounds, 0.8, na.rm = TRUE)
+    Berry_Wt >= quantile(Berry_Wt, 0.85, na.rm = TRUE),
+    total_Aroma_Compounds >= quantile(total_Aroma_Compounds, 0.85, na.rm = TRUE)
   ) %>%
   select(`sClone!`, Berry_Wt, total_Aroma_Compounds) %>%
   arrange(desc(total_Aroma_Compounds))
