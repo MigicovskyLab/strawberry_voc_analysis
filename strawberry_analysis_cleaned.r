@@ -517,10 +517,7 @@ left_ann_obj <- rowAnnotation(
   df = ann,
   col = ann_colors,
   show_annotation_name = FALSE,
-  annotation_legend_param = list(
-      title_gp = gpar(fontsize = 30),
-      labels_gp = gpar(fontsize = 22)
-  )
+  show_legend = FALSE
 )
 
 heatmap_plot <- Heatmap(
@@ -546,15 +543,17 @@ heatmap_plot <- Heatmap(
   cluster_row_slices = FALSE,
   cluster_column_slices = FALSE,
   row_title = NULL,
-  row_names_gp = gpar(fontsize = 16),
-  column_names_gp = gpar(fontsize = 16),
+  row_names_gp = gpar(fontsize = 22),
+  column_names_gp = gpar(fontsize = 22),
   column_names_rot = 90,
   row_names_side = "left",
   heatmap_width = unit(18, "inch"),
   heatmap_height = unit(18, "inch"),
   heatmap_legend_param = list(
-    title_gp = gpar(fontsize = 18),
-    labels_gp = gpar(fontsize = 14)
+    title_gp = gpar(fontsize = 28),
+    labels_gp = gpar(fontsize = 22),
+    legend_height = unit(4, "inch"),
+    grid_width = unit(0.4, "inch")
   )
 )
 
@@ -652,15 +651,15 @@ heatmap_object_totals <- Heatmap(
   column_split = ann_totals$Class,
   cluster_row_slices = FALSE,
   cluster_column_slices = FALSE,
-  row_names_gp = gpar(fontsize = 16),
-  column_names_gp = gpar(fontsize = 16),
+  row_names_gp = gpar(fontsize = 22),
+  column_names_gp = gpar(fontsize = 22),
   column_names_rot = 90,
   row_names_side = "left",
   heatmap_width = unit(7, "inch"),
   heatmap_height = unit(7, "inch")
 )
 
-png("/Users/clayelzinga/Desktop/plots/strawberry/combined_heatmaps.png", width = 28, height = 22, units = "in", res = 300)
+png("combined_heatmaps.png", width = 28, height = 22, units = "in", res = 300)
 
 grid.newpage()
 
@@ -1211,7 +1210,7 @@ if (nrow(sig_indices) > 0) {
       geom_point(alpha = 0.6, size = 2) +
       geom_smooth(method = "lm", color = plot_color, se = FALSE, linewidth = 1) +
       annotate("text", x = Inf, y = Inf, label = stat_label, 
-               vjust = 1, hjust = 1, size = 7) + 
+               vjust = 2, hjust = 1, size = 7) + 
       theme_bw() +
       theme(
         axis.title = element_text(size = 28),
