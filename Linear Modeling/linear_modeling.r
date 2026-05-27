@@ -2,7 +2,7 @@ library(tidyverse)
 library(readxl)
 library(broom)
 
-aov_data <- read_excel("../strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%

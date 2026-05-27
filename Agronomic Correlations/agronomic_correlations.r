@@ -3,7 +3,7 @@ library(readxl)
 library(Hmisc)
 library(cowplot)
 
-aov_data <- read_excel("../strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -121,6 +121,41 @@ p_values_vector <- as.vector(p_matrix)
 p_adj_vector <- p.adjust(p_values_vector, method = "BH", n = n_tests)
 p_adj_matrix <- matrix(p_adj_vector, nrow = nrow(p_matrix), ncol = ncol(p_matrix))
 dimnames(p_adj_matrix) <- dimnames(p_matrix)
+
+p_adj_wt <- p_adj_matrix[, "Berry_Wt"]
+p_adj_date <- p_adj_matrix[, "Harvest_Date"]
+
+possible_wt <- length(p_adj_wt)
+sig_wt <- sum(p_adj_wt < fdr_threshold, na.rm = TRUE)
+
+possible_date <- length(p_adj_date)
+sig_date <- sum(p_adj_date < fdr_threshold, na.rm = TRUE)
+
+target_quantile <- 0.15
+
+quantile_data <- combined_data %>%
+  mutate(
+    Berry_Wt = as.numeric(Berry_Wt),
+    total_Aroma_Compounds = as.numeric(total_Aroma_Compounds)
+  )
+
+wt_cutoff <- quantile(quantile_data$Berry_Wt, 1 - target_quantile, na.rm = TRUE)
+aroma_cutoff <- quantile(quantile_data$total_Aroma_Compounds, 1 - target_quantile, na.rm = TRUE)
+
+top_berry_producers <- quantile_data %>%
+  filter(Berry_Wt >= wt_cutoff) %>%
+  select(`sClone!`, Berry_Wt) %>%
+  arrange(desc(Berry_Wt))
+
+top_aroma_producers <- quantile_data %>%
+  filter(total_Aroma_Compounds >= aroma_cutoff) %>%
+  select(`sClone!`, total_Aroma_Compounds) %>%
+  arrange(desc(total_Aroma_Compounds))
+
+overlap_metrics <- quantile_data %>%
+  filter(`sClone!` %in% top_berry_producers$`sClone!` & `sClone!` %in% top_aroma_producers$`sClone!`) %>%
+  select(`sClone!`, Berry_Wt, total_Aroma_Compounds) %>%
+  arrange(desc(Berry_Wt))
 
 sig_indices <- which(p_adj_matrix < fdr_threshold, arr.ind = TRUE)
 
