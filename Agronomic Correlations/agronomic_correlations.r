@@ -228,3 +228,34 @@ if (nrow(sig_indices) > 0) {
   print(final_plot)
   dev.off()
 }
+
+
+
+late_low_acetone <- combined_data %>%
+  filter(
+    Harvest_Date >= quantile(Harvest_Date, 0.9, na.rm = TRUE),
+    Acetone <= quantile(Acetone, 0.10, na.rm = TRUE)
+  ) %>%
+  select(`sClone!`, Harvest_Date, Acetone) %>%
+  arrange(desc(Harvest_Date))
+
+large_high_esters <- combined_data %>%
+  filter(
+    Berry_Wt >= quantile(Berry_Wt, 0.75, na.rm = TRUE),
+    Ethyl_Acetate >= quantile(Ethyl_Acetate, 0.75, na.rm = TRUE),
+    Hexanoic_acid_ethyl_ester >= quantile(Hexanoic_acid_ethyl_ester, 0.75, na.rm = TRUE)
+  ) %>%
+  select(`sClone!`, Berry_Wt, Ethyl_Acetate, Hexanoic_acid_ethyl_ester) %>%
+  arrange(desc(Berry_Wt))
+
+large_high_total_aroma <- combined_data %>%
+  filter(
+    Berry_Wt >= quantile(Berry_Wt, 0.85, na.rm = TRUE),
+    total_Aroma_Compounds >= quantile(total_Aroma_Compounds, 0.85, na.rm = TRUE)
+  ) %>%
+  select(`sClone!`, Berry_Wt, total_Aroma_Compounds) %>%
+  arrange(desc(total_Aroma_Compounds))
+
+print(late_low_acetone %>% mutate(across(where(is.numeric), ~ sprintf("%.6f", .))))
+print(large_high_esters %>% mutate(across(where(is.numeric), ~ sprintf("%.6f", .))))
+print(large_high_total_aroma %>% mutate(across(where(is.numeric), ~ sprintf("%.6f", .))))
