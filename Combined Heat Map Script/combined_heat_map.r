@@ -4,7 +4,7 @@ library(ComplexHeatmap)
 library(colorRamp2)
 library(grid)
 
-aov_data <- read_excel("../strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_data/strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -308,7 +308,7 @@ heatmap_object_totals <- Heatmap(
   heatmap_height = unit(7, "inch")
 )
 
-png("combined_heatmaps.png", width = 28, height = 22, units = "in", res = 300)
+cairo_pdf("combined_heatmaps.pdf", width = 28, height = 22)
 grid.newpage()
 draw(heatmap_plot, newpage = FALSE)
 grid.text("A", x = unit(0.18, "npc"), y = unit(0.94, "npc"), gp = gpar(fontsize = 40, fontface = "bold"))

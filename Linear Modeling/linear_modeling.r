@@ -2,7 +2,7 @@ library(tidyverse)
 library(readxl)
 library(broom)
 
-aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_data/strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -67,7 +67,7 @@ compound_cols <- setdiff(names(aov_data_means_totals), c(id_keep, prop_cols))
 compound_cols <- intersect(compound_cols, all_vocs)
 analysis_cols <- c(compound_cols, total_cols)
 
-agronomic_data <- read_csv("strawberry_agronomic_data.csv")
+agronomic_data <- read_csv("strawberry_data/strawberry_agronomic_data.csv")
 name_map <- c("CA 42.8-16 Tioga parent" = "CA 42.8‑16 Tioga parent", "F. x ananassa NC 98-22-4" = "F. x ananassa NC 98‑22‑4", "Annapolis (Kentville)" = "K-Annapolis", "Bounty (Kentville)" = "K-Bounty", "Brunswick (Kentville)" = "K-Brunswick", "Cabot (Kentville)" = "K-Cabot", "Cavendish (Kentville)" = "K-Cavendish", "Evangeline (Kentville)" = "K-Evangeline", "Honeoye (Kentville)" = "K-Honeoye", "Jewel (Kentville)" = "K-Jewel", "Kent (Kentville)" = "K-Kent", "Laurel (Kentville)" = "K-Laurel", "Lila (Kentville)" = "K-Lila", "Mira (Kentville)" = "K-Mira", "Sable (Kentville)" = "K-Sable", "Valley Sunset (Kentville)" = "K-Valley Sunset", "Veestar (Kentville)" = "K-Veestar", "Wendy (Kentville)" = "K-Wendy", "NW 90054-37" = "NW 90054‑37")
 
 agronomic_data <- agronomic_data %>% mutate(Plant_Name_clean = dplyr::recode(Plant_Name, !!!name_map))

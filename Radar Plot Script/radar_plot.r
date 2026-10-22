@@ -3,7 +3,7 @@ library(readxl)
 library(fmsb)
 library(scales)
 
-aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_data/strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -32,7 +32,7 @@ aov_data_means <- aov_data_no_outliers %>%
 
 aov_data_means_totals <- aov_data_means
 
-agronomic_data <- read_csv("strawberry_agronomic_data.csv")
+agronomic_data <- read_csv("strawberry_data/strawberry_agronomic_data.csv")
 
 name_map <- c("CA 42.8-16 Tioga parent" = "CA 42.8‑16 Tioga parent", "F. x ananassa NC 98-22-4" = "F. x ananassa NC 98‑22‑4", "Annapolis (Kentville)" = "K-Annapolis", "Bounty (Kentville)" = "K-Bounty", "Brunswick (Kentville)" = "K-Brunswick", "Cabot (Kentville)" = "K-Cabot", "Cavendish (Kentville)" = "K-Cavendish", "Evangeline (Kentville)" = "K-Evangeline", "Honeoye (Kentville)" = "K-Honeoye", "Jewel (Kentville)" = "K-Jewel", "Kent (Kentville)" = "K-Kent", "Laurel (Kentville)" = "K-Laurel", "Lila (Kentville)" = "K-Lila", "Mira (Kentville)" = "K-Mira", "Sable (Kentville)" = "K-Sable", "Valley Sunset (Kentville)" = "K-Valley Sunset", "Veestar (Kentville)" = "K-Veestar", "Wendy (Kentville)" = "K-Wendy", "NW 90054-37" = "NW 90054‑37")
 
@@ -105,7 +105,7 @@ line_widths_specific[rownames(radar_data_specific) %in% c("Itasca", "Sweet Charl
 label_colors <- c(rep("black", length(target_compounds)), rep("#ff3333", length(other_aroma_compounds)))
 label_colors_specific <- label_colors[seq_len(ncol(radar_data_specific))]
 
-png("combined_radar_panels_dash.png", width = 12, height = 7, units = "in", res = 300)
+cairo_pdf("combined_radar_panels_dash.pdf", width = 12, height = 7)
 par(mfrow = c(1, 2), mar = c(9, 3, 6, 3), xpd = TRUE, pty = "s")
 
 radarchart(radar_fmsb, axistype = 1, pcol = colors_border, caxislabels = c(0, 25, 50, 75, 100), calcex = 0.8, pfcol = NA, axislabcol = "black", plwd = 5, plty = 2, cglcol = "grey80", cglty = 1, title = "", vlabels = rep("", ncol(radar_data)), vlcex = 1)

@@ -3,7 +3,7 @@ library(readxl)
 library(ggbeeswarm)
 library(patchwork)
 
-aov_data <- read_excel("/Users/clayelzinga/Desktop/Work_School/School/Thesis/data_analysis/strawberry/strawberry_voc_analysis/strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_data/strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -32,7 +32,7 @@ aov_data_means <- aov_data_no_outliers %>%
 
 aov_data_means_totals <- aov_data_means
 
-agronomic_data <- read_csv("strawberry_agronomic_data.csv")
+agronomic_data <- read_csv("strawberry_data/strawberry_agronomic_data.csv")
 name_map <- c("CA 42.8-16 Tioga parent" = "CA 42.8‑16 Tioga parent", "F. x ananassa NC 98-22-4" = "F. x ananassa NC 98‑22‑4", "Annapolis (Kentville)" = "K-Annapolis", "Bounty (Kentville)" = "K-Bounty", "Brunswick (Kentville)" = "K-Brunswick", "Cabot (Kentville)" = "K-Cabot", "Cavendish (Kentville)" = "K-Cavendish", "Evangeline (Kentville)" = "K-Evangeline", "Honeoye (Kentville)" = "K-Honeoye", "Jewel (Kentville)" = "K-Jewel", "Kent (Kentville)" = "K-Kent", "Laurel (Kentville)" = "K-Laurel", "Lila (Kentville)" = "K-Lila", "Mira (Kentville)" = "K-Mira", "Sable (Kentville)" = "K-Sable", "Valley Sunset (Kentville)" = "K-Valley Sunset", "Veestar (Kentville)" = "K-Veestar", "Wendy (Kentville)" = "K-Wendy", "NW 90054-37" = "NW 90054‑37")
 
 agronomic_data <- agronomic_data %>% mutate(Plant_Name_clean = dplyr::recode(Plant_Name, !!!name_map))
@@ -148,156 +148,5 @@ all_plots <- c(p2_list, p3_list, p1_list)
 
 if(length(all_plots) > 0) {
   final_figure <- wrap_plots(all_plots, nrow = 1) + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 28, face = "bold"))
-  ggsave("strawberry_aroma_ALL_comparisons.png", final_figure, width = 18, height = 6, dpi = 300)
+  ggsave("strawberry_aroma_ALL_comparisons.pdf", final_figure, width = 18, height = 6, units = "in", dpi = 600)
 }
-
-
-
-# Combine the two datasets
-linalool_data <- bind_rows(
-  df_breeding %>% mutate(Comparison = "Breeding Material"),
-  df_cultivar %>% mutate(Comparison = "Cultivars")
-) %>%
-  select(Comparison, Population, `sClone!`, Linalool) %>%
-  filter(!is.na(Linalool)) %>%
-  arrange(desc(Linalool))
-
-# Top 5 accessions in each comparison and population
-top_linalool <- linalool_data %>%
-  group_by(Comparison, Population) %>%
-  slice_max(Linalool, n = 5, with_ties = FALSE) %>%
-  arrange(Comparison, Population, desc(Linalool)) %>%
-  ungroup()
-
-print(top_linalool, n = Inf)
-
-
-linalool_data %>%
-  group_by(Comparison, Population) %>%
-  slice_max(Linalool, n = 1, with_ties = FALSE) %>%
-  ungroup()
-
-
-library(dplyr)
-
-agronomic_data %>%
-  filter(Plant_Name %in% c(
-    "ORUS 3727 ORUSM 264",
-    "ORUS 3727 ORUSM 265"
-  )) %>%
-  select(Plant_Name, ORIGIN.x, Plant_Source, YEAR_ORIGIN)
-
-
-if (is.null(plot_data_breeding)) {
-  message("No significant breeding-origin comparisons.")
-} else {
-  plot_data_breeding %>%
-    distinct(Compound, Compound_Clean, P_Value, FDR) %>%
-    arrange(FDR) %>%
-    print(n = Inf, width = Inf)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Select VOCs directly from the processed aroma-only dataset.
-# This avoids accidentally excluding compounds by their names.
-voc_columns <- setdiff(names(aov_data_means), "sClone!")
-
-stopifnot(
-  length(voc_columns) == 36L,
-  all(voc_columns %in% names(df_breeding)),
-  !anyNA(df_breeding$Population)
-)
-
-# Confirm the breeding-material group sizes.
-df_breeding %>%
-  count(Population, name = "Total_accessions") %>%
-  print()
-
-origin_results <- purrr::map_dfr(voc_columns, function(compound) {
-
-  kentville <- df_breeding[[compound]][
-    df_breeding$Population == "Kentville"
-  ]
-  external <- df_breeding[[compound]][
-    df_breeding$Population == "External"
-  ]
-
-  kentville <- kentville[!is.na(kentville)]
-  external <- external[!is.na(external)]
-
-  tested <- length(kentville) >= 3L &&
-            length(external) >= 3L
-
-  # Same default Wilcoxon settings as your existing origin analysis.
-  fit <- if (tested) {
-    wilcox.test(kentville, external)
-  } else {
-    NULL
-  }
-
-  tibble(
-    Compound = compound,
-    Aroma_compound = coalesce(
-      unname(voc_name_map[compound]),
-      compound
-    ),
-    n_Kentville = length(kentville),
-    n_External = length(external),
-    Median_Kentville_ng_g = if (length(kentville)) {
-      median(kentville)
-    } else {
-      NA_real_
-    },
-    Median_External_ng_g = if (length(external)) {
-      median(external)
-    } else {
-      NA_real_
-    },
-    W = if (tested) unname(fit$statistic) else NA_real_,
-    p_raw = if (tested) fit$p.value else NA_real_,
-    Tested = tested
-  )
-}) %>%
-  mutate(
-    # Keep the full planned family, including unavailable tests.
-    p_FDR = p.adjust(p_raw, method = "BH", n = 36L),
-    Significant = !is.na(p_FDR) & p_FDR < 0.05
-  ) %>%
-  arrange(p_FDR)
-
-# Print significant origin differences.
-significant_origin <- origin_results %>%
-  filter(Significant) %>%
-  select(
-    Aroma_compound,
-    n_Kentville, n_External,
-    Median_Kentville_ng_g, Median_External_ng_g,
-    W, p_raw, p_FDR
-  )
-
-print(significant_origin, n = Inf, width = Inf)
-
-cat(
-  "\nSignificant breeding-origin comparisons:",
-  nrow(significant_origin), "\n"
-)
-
-# Optional: print all 36 results, including unavailable tests.
-# print(origin_results, n = Inf, width = Inf)

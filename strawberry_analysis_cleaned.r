@@ -15,7 +15,7 @@ library(gridExtra)
 library(cowplot)
 
 # %%############################################################################# data loading and cleaning
-aov_data <- read_excel("strawberry_aroma.xlsx", sheet = "aovData")
+aov_data <- read_excel("strawberry_data/strawberry_aroma.xlsx", sheet = "aovData")
 
 id_cols <- c("scUnit", "sBlock!", "sbPlot!", "ssPlot!", "sClone!")
 long_df <- aov_data %>%
@@ -234,7 +234,7 @@ compound_cols <- intersect(compound_cols, all_vocs)
 
 analysis_cols <- c(compound_cols, total_cols)
 
-output_dir <- "/Users/clayelzinga/Desktop/plots/VOC_histograms"
+output_dir <- file.path(Sys.getenv("STRAWBERRY_OUTPUT_DIR", unset = "."), "plots", "VOC_histograms")
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
 safe_filename <- function(x) {
@@ -742,7 +742,7 @@ cat("Odds Ratio: ", fisher_result$estimate, "\n")
 
 
 # %%############################################################################# Load in Agronomic Data
-agronomic_data <- read_csv("strawberry_agronomic_data.csv")
+agronomic_data <- read_csv("strawberry_data/strawberry_agronomic_data.csv")
 
 name_map <- c(
   "CA 42.8-16 Tioga parent" = "CA 42.8‑16 Tioga parent",
@@ -977,15 +977,16 @@ dev.off()
 all_included_varieties <- unique(c(names(mention_counts[mention_counts >= 2]), specific_varieties))
 
 table_data <- combined_data %>%
-  select(variety_col, all_of(all_plot_compounds)) %>%
+  select(all_of(c(variety_col, all_plot_compounds))) %>%
   filter(!!sym(variety_col) %in% all_included_varieties) %>%
   rename_with(~ clean_names[.], all_of(all_plot_compounds))
 
-View(table_data)
+if (interactive()) View(table_data)
 
 write_csv(table_data, file.path("raw_radar_plot_.csv"))
 
 # %%############################################################################# Origin and Status Comparisons
+if (identical(Sys.getenv("STRAWBERRY_INCLUDE_ORIGIN"), "true")) {
 aroma_indices <- 2:37
 stats_status <- combined_data %>%
   filter(STATUS %in% c("Cultivar", "Breeding Material")) %>%
@@ -1148,8 +1149,13 @@ summary_status <- calc_summary_stats(plot_data_status, "STATUS")
 
 all_summaries <- bind_rows(summary_breeding, summary_cultivar, summary_status)
 
-if (!is.null(all_summaries) && nrow(all_summaries) > 0) {
+if (interactive() && !is.null(all_summaries) && nrow(all_summaries) > 0) {
   View(all_summaries)
+}
+
+
+} else {
+  message("Skipping origin/status comparisons.")
 }
 
 # %%############################################################################# Agronomic Correlations
